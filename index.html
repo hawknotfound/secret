@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Fonts: Playfair Display (Serif) & Outfit (Modern Sans equivalent to Satoshi for stability) -->
+    <!-- Fonts: Playfair Display (Serif) & Outfit (Modern Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -158,6 +158,7 @@
         .polaroid-container {
             perspective: 1000px;
             width: 300px;
+            max-width: 100%;
             margin: 0 auto;
         }
         
@@ -176,6 +177,8 @@
             height: auto;
             display: block;
             border: 1px solid #eee;
+            aspect-ratio: 3/4; /* Keeps polaroid look even if image loads slow */
+            object-fit: cover;
         }
         
         .polaroid-caption {
@@ -304,13 +307,14 @@
             <button onclick="nextStep()" class="btn-primary">Remember this?</button>
         </div>
 
-        <!-- STEP 4: Polaroid Memory -->
+        <!-- STEP 4: Polaroid Memory (UPDATED WITH IMAGE) -->
         <div id="step-4" class="step-container glass-card">
             <h2 class="text-3xl md:text-4xl font-bold mb-6 text-gradient">That One Time...</h2>
             
             <div class="polaroid-container mb-8" id="polaroid-card">
                 <div class="polaroid">
-                    <img src="" alt="Beautiful Memory" loading="lazy">
+                    <!-- Image Added Here -->
+                    <img src="https://files.catbox.moe/xoaivv.jpeg" alt="Beautiful Memory" loading="lazy">
                     <div class="polaroid-caption">Our favorite memory</div>
                 </div>
             </div>
