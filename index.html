@@ -2,391 +2,313 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Fonts -->
+    <!-- Fonts: 'Italiana' (Luxury Serif) & 'Montserrat' (Clean Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. Global & Aesthetic Setup --- */
+        /* --- 1. Global Setup --- */
         :root {
-            --bg-dark: #050505;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --primary-glow: rgba(236, 72, 153, 0.5);
-            --text-gradient: linear-gradient(to right, #fce7f3, #fbcfe8, #ffffff);
+            --bg-dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
         }
 
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            height: 100svh; /* Mobile viewport fix */
             overflow: hidden;
             background-color: var(--bg-dark);
-            font-family: 'Outfit', sans-serif;
-            color: #e5e5e5;
+            font-family: 'Montserrat', sans-serif;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
         }
 
-        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        h1, h2, h3 { font-family: 'Italiana', serif; }
 
-        /* Cinematic Grain Overlay */
-        .grain-overlay {
+        /* --- 2. Dynamic Mesh Gradient Background --- */
+        .animated-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            opacity: 0.5;
-        }
-
-        /* --- 2. Dreamy Background --- */
-        .aurora-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             z-index: -2;
+            background: #000;
             overflow: hidden;
-            background: #020204;
         }
 
-        .aurora-blob {
+        .orb {
             position: absolute;
-            filter: blur(90px);
-            opacity: 0.5;
-            animation: float 25s infinite ease-in-out;
             border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatOrb 20s infinite ease-in-out alternate;
         }
 
-        /* Deeper, richer colors */
-        .blob-1 { top: -20%; left: -20%; width: 60vw; height: 60vw; background: #4c1d95; animation-delay: 0s; }
-        .blob-2 { bottom: -20%; right: -20%; width: 70vw; height: 70vw; background: #be185d; animation-delay: -5s; }
-        .blob-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: #0f172a; animation-delay: -10s; }
+        .orb-1 { width: 80vw; height: 80vw; background: #6366f1; top: -20%; left: -20%; animation-duration: 25s; }
+        .orb-2 { width: 70vw; height: 70vw; background: #ec4899; bottom: -10%; right: -10%; animation-duration: 30s; animation-delay: -5s; }
+        .orb-3 { width: 50vw; height: 50vw; background: #8b5cf6; top: 40%; left: 40%; animation-duration: 22s; animation-delay: -10s; }
+        .orb-4 { width: 60vw; height: 60vw; background: #f43f5e; bottom: 10%; left: 10%; animation-duration: 28s; animation-delay: -15s; }
 
-        @keyframes float {
+        @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, -60px) scale(1.1); }
-            66% { transform: translate(-30px, 30px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
         }
 
-        /* --- 3. UI Components --- */
-        #canvas-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; pointer-events: none;
+        /* Grain Overlay for Texture */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.07;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
         }
 
-        /* Modern Glass Card */
+        /* --- 3. Glassmorphism Card --- */
         .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            border-radius: 30px;
-        }
-
-        .text-gradient {
-            background: var(--text-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Elegant Button */
-        .btn-primary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 16px 40px;
-            border-radius: 9999px;
-            font-weight: 500;
-            letter-spacing: 1px;
-            transition: all 0.4s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
-        }
-
-        /* --- 4. Bento Grid --- */
-        .bento-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-        @media (min-width: 768px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
-        
-        .bento-item {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 20px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        .bento-item:hover { background: rgba(255,255,255,0.05); transform: translateY(-3px); }
-        .span-2 { grid-column: span 1; }
-        @media (min-width: 768px) { .span-2 { grid-column: span 2; } }
-
-        /* --- 5. Finale Image Styling --- */
-        .finale-image-container {
-            width: 100%;
-            max-width: 320px; /* Portrait size */
-            margin: 0 auto 2rem auto;
-            position: relative;
             border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 20px 60px rgba(0,0,0,0.6);
-            transform-origin: center;
-            animation: breathe 6s infinite ease-in-out;
-        }
-
-        .finale-image-container::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
-            z-index: 2;
-        }
-
-        .finale-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-            transition: transform 10s ease;
-        }
-        
-        /* Subtle Zoom Effect */
-        .finale-image-container:hover .finale-image {
-            transform: scale(1.1);
-        }
-
-        @keyframes breathe {
-            0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 20px 60px rgba(0,0,0,0.6); transform: translateY(0); }
-            50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.2), 0 25px 70px rgba(236, 72, 153, 0.3); transform: translateY(-5px); }
-        }
-
-        /* --- 6. Step Logic --- */
-        .step-container {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%; max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem 2rem;
             display: none;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 3rem;
             opacity: 0;
+            transform: translateY(20px);
         }
-        .step-active { display: flex; opacity: 1; }
 
-        .progress-track {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 3px;
-            background: rgba(255,255,255,0.05);
+        .step-active {
+            display: flex;
+        }
+
+        /* --- 4. Typography & Elements --- */
+        .title-large {
+            font-size: clamp(2.5rem, 8vw, 4.5rem); /* Responsive Font Size */
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, #fbcfe8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-body {
+            font-size: clamp(1rem, 4vw, 1.15rem);
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 300;
+        }
+
+        /* Minimal Button */
+        .btn-minimal {
+            margin-top: 2rem;
+            padding: 12px 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-minimal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .btn-minimal:hover {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 12px 42px; /* Slight expansion */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-minimal:hover::before {
+            transform: translateX(100%);
+        }
+
+        /* --- 5. Image Styling (The Finale) --- */
+        .photo-frame {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 3/4;
+            margin: 0 auto 1.5rem auto;
+            border-radius: 1000px 1000px 20px 20px; /* Arch shape */
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1.5s ease;
+        }
+
+        .photo-frame:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Shine effect on photo */
+        .photo-shine {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* --- 6. Bento Grid for Compliments --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        
+        .bento-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 16px;
+            transition: transform 0.3s;
+        }
+        
+        .bento-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.06); }
+        
+        .bento-title {
+            color: #fce7f3;
+            font-family: 'Italiana', serif;
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        
+        .bento-text {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+
+        /* --- Progress Line --- */
+        .progress-line {
+            position: fixed;
+            bottom: 0; left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6366f1, #ec4899);
+            width: 0%;
             z-index: 100;
+            transition: width 1s ease-in-out;
         }
-        .progress-fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, #ec4899, #8b5cf6);
-            transition: width 0.8s ease;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-        }
-
     </style>
 </head>
 <body>
 
-    <!-- Aesthetics -->
-    <div class="grain-overlay"></div>
-    <div class="aurora-bg">
-        <div class="aurora-blob blob-1"></div>
-        <div class="aurora-blob blob-2"></div>
-        <div class="aurora-blob blob-3"></div>
+    <!-- Background Elements -->
+    <div class="animated-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
     </div>
-    <div id="canvas-container"></div>
+    <div class="noise-overlay"></div>
+    <div class="progress-line" id="progress"></div>
 
-    <div class="progress-track">
-        <div class="progress-fill" id="progress-bar"></div>
-    </div>
+    <!-- Centered Content -->
+    <main class="fixed inset-0 flex items-center justify-center p-4">
 
-    <main class="relative w-full h-full z-10">
-
-        <!-- STEP 1: Intro -->
-        <div id="step-1" class="step-container glass-card step-active">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient italic">For You</h1>
-            <p class="text-lg text-gray-400 mb-10 font-light tracking-wide">
-                A little corner of the internet, <br>crafted just for your special day.
+        <!-- STEP 1: Introduction -->
+        <div id="step-1" class="glass-card step-active">
+            <h1 class="title-large">For You</h1>
+            <p class="text-body mb-8">
+                I made a little space on the internet,<br>
+                just to celebrate the day the world<br>
+                got a little brighter.
             </p>
-            <button onclick="nextStep()" class="btn-primary">Open</button>
+            <button onclick="nextStep()" class="btn-minimal">Open</button>
         </div>
 
-        <!-- STEP 2: The Message -->
-        <div id="step-2" class="step-container glass-card">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6 text-gradient">Happy Birthday</h1>
-            <p class="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed font-light">
-                Another year of you making the world a more beautiful place. Your existence is a gift that I cherish every single day.
-            </p>
-            <button onclick="nextStep()" class="btn-primary">Next</button>
-        </div>
-
-        <!-- STEP 3: Compliments -->
-        <div id="step-3" class="step-container glass-card" style="max-width: 700px;">
-            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-gradient">Why You're Special</h2>
-            <div class="bento-grid w-full mb-10 text-left">
-                <div class="bento-item span-2">
-                    <h3 class="text-xl text-pink-300 font-medium mb-2">✨ Pure Magic</h3>
-                    <p class="text-gray-400 text-sm">The way you carry yourself with such grace and kindness is rare. You inspire everyone around you.</p>
+        <!-- STEP 2: Compliments (Bento Style) -->
+        <div id="step-2" class="glass-card">
+            <h2 class="text-3xl md:text-4xl text-white font-serif mb-6">Why You Shine</h2>
+            
+            <div class="bento-grid">
+                <div class="bento-card">
+                    <div class="bento-title">Your Aura</div>
+                    <div class="bento-text">You bring a warmth into the room that puts everyone at ease. It's a rare gift.</div>
                 </div>
-                <div class="bento-item">
-                    <h3 class="text-xl text-pink-300 font-medium mb-2">😊 Your Energy</h3>
-                    <p class="text-gray-400 text-sm">It’s contagious. You light up rooms without even trying.</p>
+                <div class="bento-card">
+                    <div class="bento-title">Your Mind</div>
+                    <div class="bento-text">The way you see the world is beautiful. Your thoughts are unique and inspiring.</div>
                 </div>
-                <div class="bento-item">
-                    <h3 class="text-xl text-pink-300 font-medium mb-2">🧠 Your Mind</h3>
-                    <p class="text-gray-400 text-sm">Beautifully complex and endlessly fascinating.</p>
+                <div class="bento-card" style="grid-column: 1 / -1;">
+                    <div class="bento-title">Your Heart</div>
+                    <div class="bento-text">Kindness looks so natural on you. Thank you for being exactly who you are.</div>
                 </div>
             </div>
-            <button onclick="nextStep()" class="btn-primary">One Last Thing</button>
+
+            <button onclick="nextStep()" class="btn-minimal">Continue</button>
         </div>
 
-        <!-- STEP 4: The Finale (Photo) -->
-        <div id="step-4" class="step-container glass-card">
+        <!-- STEP 3: Finale (Photo + Birthday) -->
+        <div id="step-3" class="glass-card">
             
-            <!-- The Image Centerpiece -->
-            <div class="finale-image-container">
-                <img src="https://files.catbox.moe/xoaivv.jpeg" alt="Birthday Girl" class="finale-image">
+            <!-- Photo Container -->
+            <div class="photo-frame">
+                <div class="photo-shine"></div>
+                <img src="https://files.catbox.moe/xoaivv.jpeg" alt="Birthday Star">
             </div>
 
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg" style="font-family: 'Playfair Display', serif;">
-                Happy Birthday ❤️
-            </h1>
+            <h1 class="title-large" style="font-size: 3rem; margin-bottom: 0.5rem;">Happy Birthday</h1>
             
-            <p class="text-gray-300 mb-8 font-light">
-                Here’s to you, and all the beautiful moments waiting for you this year.
+            <p class="text-body mb-6">
+                May this year be as stunning as you are.
             </p>
 
-            <button id="celebrate-btn" onclick="startFinale()" class="btn-primary">Make a Wish</button>
+            <button id="wish-btn" onclick="celebrate()" class="btn-minimal">Make a Wish</button>
         </div>
 
     </main>
 
     <script>
-        // --- 1. Three.js Background (Subtle Particles) ---
-        const initThreeJS = () => {
-            const container = document.getElementById('canvas-container');
-            const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x050505, 0.002);
-
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 20;
-
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
-
-            // Particles
-            const particlesGeometry = new THREE.BufferGeometry();
-            const particlesCount = 700;
-            const posArray = new Float32Array(particlesCount * 3);
-
-            for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 40; 
-            }
-
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 0.05,
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.8,
-            });
-
-            const particlesMesh = new THREE.Points(particlesGeometry, material);
-            scene.add(particlesMesh);
-
-            // Floating Hearts (Fewer, more elegant)
-            const heartShape = new THREE.Shape();
-            const x = 0, y = 0;
-            heartShape.moveTo(x + 5, y + 5);
-            heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
-            heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
-            heartShape.bezierCurveTo(x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19);
-            heartShape.bezierCurveTo(x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7);
-            heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
-            heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
-
-            const heartGeo = new THREE.ExtrudeGeometry(heartShape, { depth: 1, bevelEnabled: false });
-            heartGeo.center();
-            
-            const heartMat = new THREE.MeshBasicMaterial({ color: 0xdb2777, transparent: true, opacity: 0.3, wireframe: true });
-            const hearts = [];
-
-            for(let i=0; i<10; i++) {
-                const mesh = new THREE.Mesh(heartGeo, heartMat);
-                mesh.position.set((Math.random()-0.5)*30, (Math.random()-0.5)*30, (Math.random()-0.5)*20);
-                mesh.scale.set(0.05, 0.05, 0.05);
-                mesh.rotation.z = Math.PI; // Flip upright
-                scene.add(mesh);
-                hearts.push({ mesh, speed: Math.random() * 0.02 });
-            }
-
-            // Animate
-            const animate = () => {
-                requestAnimationFrame(animate);
-                particlesMesh.rotation.y += 0.001;
-                particlesMesh.rotation.x += 0.0005;
-
-                hearts.forEach(h => {
-                    h.mesh.position.y += h.speed;
-                    h.mesh.rotation.y += 0.01;
-                    if(h.mesh.position.y > 15) h.mesh.position.y = -15;
-                });
-
-                renderer.render(scene, camera);
-            };
-            animate();
-
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-        };
-
-        // --- 2. Logic & Steps ---
+        // --- Logic ---
         let currentStep = 1;
-        const totalSteps = 4; // Reduced step count
+        const totalSteps = 3;
 
-        function updateProgressBar() {
-            const progress = (currentStep / totalSteps) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
+        function updateProgress() {
+            const width = (currentStep / totalSteps) * 100;
+            document.getElementById('progress').style.width = width + '%';
         }
 
         function nextStep() {
@@ -394,80 +316,115 @@
 
             const currentEl = document.getElementById(`step-${currentStep}`);
             const nextEl = document.getElementById(`step-${currentStep + 1}`);
-            
+
+            // 1. Animate Out
             gsap.to(currentEl, {
                 opacity: 0,
-                y: -30,
+                y: -40,
+                scale: 0.95,
                 filter: "blur(10px)",
-                duration: 0.6,
-                ease: "power2.in",
+                duration: 0.8,
+                ease: "power2.inOut",
                 onComplete: () => {
-                    currentEl.classList.remove('step-active');
                     currentEl.style.display = 'none';
-                    
+                    currentEl.classList.remove('step-active');
+
+                    // 2. Prepare Next
                     nextEl.style.display = 'flex';
                     nextEl.classList.add('step-active');
-                    
+
+                    // 3. Animate In
                     gsap.fromTo(nextEl, 
-                        { opacity: 0, y: 30, filter: "blur(10px)", scale: 0.95 }, 
-                        { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 0.8, ease: "power2.out" }
+                        { 
+                            opacity: 0, 
+                            y: 40, 
+                            scale: 0.95, 
+                            filter: "blur(10px)" 
+                        },
+                        { 
+                            opacity: 1, 
+                            y: 0, 
+                            scale: 1, 
+                            filter: "blur(0px)", 
+                            duration: 1, 
+                            ease: "power3.out" 
+                        }
                     );
                     
+                    // Stagger animation for bento items if on step 2
+                    if(currentStep + 1 === 2) {
+                        gsap.from(".bento-card", {
+                            y: 20,
+                            opacity: 0,
+                            duration: 0.8,
+                            stagger: 0.1,
+                            delay: 0.3,
+                            ease: "power2.out"
+                        });
+                    }
+
+                    // Photo Reveal if on step 3
+                    if(currentStep + 1 === 3) {
+                        gsap.from(".photo-frame", {
+                            scale: 0.8,
+                            opacity: 0,
+                            duration: 1.2,
+                            delay: 0.2,
+                            ease: "elastic.out(1, 0.7)"
+                        });
+                    }
+
                     currentStep++;
-                    updateProgressBar();
+                    updateProgress();
                 }
             });
         }
 
-        // --- 3. Finale Confetti ---
-        function startFinale() {
-            const btn = document.getElementById('celebrate-btn');
+        function celebrate() {
+            const btn = document.getElementById('wish-btn');
             
-            // Pulse button then hide
-            gsap.to(btn, { 
-                scale: 1.2, duration: 0.2, yoyo: true, repeat: 1, 
-                onComplete: () => {
-                    gsap.to(btn, { opacity: 0, scale: 0, duration: 0.5, onComplete: () => btn.style.display = 'none' });
-                }
-            });
+            // Hide button gracefully
+            gsap.to(btn, { opacity: 0, y: 10, duration: 0.5, pointerEvents: 'none' });
 
-            // Confetti Cannon
-            const duration = 3 * 1000;
+            // Confetti Explosion
+            const duration = 3000;
             const end = Date.now() + duration;
 
+            // Heart Confetti
+            const heartDefaults = {
+                spread: 360,
+                ticks: 100,
+                gravity: 0,
+                decay: 0.94,
+                startVelocity: 30,
+                shapes: ['heart'],
+                colors: ['#FFC0CB', '#FF69B4', '#FF1493', '#C71585']
+            };
+
+            confetti({
+                ...heartDefaults,
+                particleCount: 50,
+                scalar: 2
+            });
+
+            confetti({
+                ...heartDefaults,
+                particleCount: 25,
+                scalar: 3
+            });
+
+            // Standard confetti rain
             (function frame() {
                 confetti({
-                    particleCount: 5,
+                    particleCount: 3,
                     angle: 60,
                     spread: 55,
                     origin: { x: 0 },
-                    colors: ['#ec4899', '#ffffff', '#db2777']
+                    colors: ['#6366f1', '#ec4899', '#ffffff']
                 });
                 confetti({
-                    particleCount: 5,
+                    particleCount: 3,
                     angle: 120,
                     spread: 55,
                     origin: { x: 1 },
-                    colors: ['#ec4899', '#ffffff', '#db2777']
-                });
-
-                if (Date.now() < end) {
-                    requestAnimationFrame(frame);
-                }
-            }());
-        }
-
-        // Init
-        window.onload = () => {
-            initThreeJS();
-            updateProgressBar();
-            
-            // Smooth reveal for Step 1
-            gsap.fromTo("#step-1", 
-                { opacity: 0, scale: 0.9, filter: "blur(20px)" }, 
-                { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.5, ease: "power3.out" }
-            );
-        };
-    </script>
-</body>
-</html>
+                    colors: ['#6366f1', '#ec4899', '#ffffff']
